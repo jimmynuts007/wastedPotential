@@ -12,28 +12,80 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 public class XLSReader {
 
-    private final Fillo fillo;
-    private final String filePath;
+    private  Fillo fillo;
+    private  String filePath;
 
     private Connection connection;
-    private ArrayList<ArrayList<String>> arrSuiteLevelParameters;
-    private Arraylist
-    public XLSReader(String filePath) {
-        fillo = new Fillo();
+    private ArrayList<ArrayList<String>> arrTestNGSuiteLevelParameters;
+    private ArrayList<String> arrTestNGListeners;
+    private String projectName;
+    private String projectDescription;
+    private String projectSkeleton;
+    private String projectLocation;
+    private String testNg_Needed;
+    private String maven_Needed;
+    private String maven_project_ModelVersion,maven_project_GroupId,maven_project_ArtifactId,maven_project_Version;
+    private ArrayList<ArrayList<String>> arrDependenciesMaven;
+    private ArrayList<ArrayList<String>>  arrProjectLevelDetails;
+    private ArrayList<ArrayList<String>> arrProjectSkeletons;
+    private ArrayList<ArrayList<String>> arrQueries;
+    private ArrayList<String> arrQuery;
+    public XLSReader(String filePath){
+       try {
+    	this.fillo = new Fillo();
         this.filePath = filePath;
+        connection = fillo.getConnection(this.filePath);
+        Recordset queriesRS = connection.executeQuery("select * from queries");
+        //queryName	query
+         arrQueries= new ArrayList<ArrayList<String>>();
+         
+         arrQuery.add(queriesRS.getField("queryName"));
+         arrQuery.add(queriesRS.getField("query"));
+         arrQueries.add(arrQuery);
+         
+       // projectName	projectDescription	projectSkeleton	projectLocation
+        //testNg_Needed	maven_Needed	maven_project_ModelVersion	
+        //maven_project_GroupId	maven_project_ArtifactId	maven_project_Version
+        //testNg_listenerClasses_csv	testNG_suite_level_paramName:paramValue_csv
+       
+         //psdquery  tcquery   dquery    psquery
+
+         for(int i=0;i<arrQueries.size();i++) {
+        	if(arrQueries.get(0).get(i)=="psdquery") {
+            	
+            }
+        	else if(arrQueries.get(0).get(i)=="tcquery") {
+            	
+            }
+        	else if(arrQueries.get(0).get(i)=="dquery") {
+        	
+}
+        	else if(arrQueries.get(0).get(i)=="psquery") {
+	
+}
+        	else {
+        		throw new Exception("query name is invalid");
+        	}
+
+        	
+        }
+         
+        maven_Needed=recordset1.getField("maven_Needed");
+        if(!maven_Needed.isEmpty() && maven_Needed.equals("Y")) {
+        	
+        }
+        testNg_Needed=recordset1.getField("testNg_Needed");
+        if(!testNg_Needed.isEmpty() && testNg_Needed.equals("Y")) {
+        	
+        }
+        
+    } catch (FilloException e) {
+        e.printStackTrace();
+    } finally {
+        connection.close();
+    }
     }
 
-    public void getTests(String query) {
-        try {
-            connection = fillo.getConnection(this.filePath);
-            Recordset recordset = connection.executeQuery(query);
-            this.createSuite(recordset);
-        } catch (FilloException e) {
-            e.printStackTrace();
-        } finally {
-            connection.close();
-        }
-    }
 
     public void createSuite(Recordset recordset) {
         XmlMapper xmlMapper = new XmlMapper();
@@ -55,6 +107,11 @@ public class XLSReader {
             recordset.close();
         }
     }
+
+	public void execute() {
+		// TODO Auto-generated method stub
+		
+	}
 
 
 }
