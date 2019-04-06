@@ -66,7 +66,6 @@ public class XLSReader {
      
 
          for(int i=0;i<arrQueries.size();i++) {
-        	 System.out.println(arrQueries.get(0).get(i));
         	if(arrQueries.get(i).get(0).equalsIgnoreCase("pldquery")) {
         		pldquery=arrQueries.get(i).get(1);
             	
@@ -88,11 +87,12 @@ public class XLSReader {
         	
         }
          Recordset pldRS=connection.executeQuery(pldquery);
-        
+         while(pldRS.next()) {
          this.projectName=pldRS.getField("projectName");
          this.projectDescription=pldRS.getField("projectDescription");
          this.projectSkeleton=pldRS.getField("projectSkeleton");
          this.projectLocation=pldRS.getField("projectLocation");
+         }
          Recordset psRS=connection.executeQuery(psquery);
          while(psRS.next()) {
          	if(projectSkeleton==psRS.getField("project_skeleton")) {
