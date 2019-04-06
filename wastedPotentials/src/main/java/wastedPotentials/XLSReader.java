@@ -20,7 +20,8 @@ public class XLSReader {
 
     private  Fillo fillo;
     private  String filePath;
-
+    String testNg_listenerClasses_csv;
+	String testNG_suite_level_paramName_paramValue_csv;
     private Connection connection;
     private ArrayList<ArrayList<String>> arrTestNGSuiteLevelParameters=new ArrayList<ArrayList<String>>();
     private ArrayList<String> arrTestNGListeners= new ArrayList<>();
@@ -87,11 +88,19 @@ public class XLSReader {
         	
         }
          Recordset pldRS=connection.executeQuery(pldquery);
-         while(pldRS.next()) {
+        
+		while(pldRS.next()) {
          this.projectName=pldRS.getField("projectName");
          this.projectDescription=pldRS.getField("projectDescription");
          this.projectSkeleton=pldRS.getField("projectSkeleton");
          this.projectLocation=pldRS.getField("projectLocation");
+         maven_project_ModelVersion=pldRS.getField("maven_project_ModelVersion");
+     	maven_project_GroupId=pldRS.getField("maven_project_GroupId");
+     	maven_project_ArtifactId=pldRS.getField("maven_project_ArtifactId");
+     	maven_project_Version=pldRS.getField("maven_project_Version");
+     	 testNg_listenerClasses_csv=pldRS.getField("testNg_listenerClasses_csv");
+    	 testNG_suite_level_paramName_paramValue_csv=pldRS.getField("testNG_suite_level_paramName_paramValue_csv");
+   
          }
          Recordset psRS=connection.executeQuery(psquery);
          while(psRS.next()) {
@@ -102,10 +111,7 @@ public class XLSReader {
          
          maven_Needed=pldRS.getField("maven_Needed");
         if(!maven_Needed.isEmpty() && maven_Needed.equals("Y")) {
-        	maven_project_ModelVersion=pldRS.getField("maven_project_ModelVersion");
-        	maven_project_GroupId=pldRS.getField(maven_project_GroupId);
-        	maven_project_ArtifactId=pldRS.getField("maven_project_ArtifactId");
-        	maven_project_Version=pldRS.getField("maven_project_Version");
+        	
         	Recordset dRS=connection.executeQuery(dquery);
         	while(dRS.next()) {
         	ArrayList<String> singledependency= new ArrayList<String>();
@@ -119,9 +125,7 @@ public class XLSReader {
         }
         testNg_Needed=pldRS.getField("testNg_Needed");
         if(!testNg_Needed.isEmpty() && testNg_Needed.equals("Y")) {
-        	String testNg_listenerClasses_csv=pldRS.getField("testNg_listenerClasses_csv");
-        	String testNG_suite_level_paramName_paramValue_csv=pldRS.getField("testNG_suite_level_paramName_paramValue_csv");
-        	String[] listenerstring= testNg_listenerClasses_csv.split(",");
+        	 	String[] listenerstring= testNg_listenerClasses_csv.split(",");
         	String[] suitelevelparams=testNG_suite_level_paramName_paramValue_csv.split(",");
         	
         	for(String s:listenerstring) {
@@ -184,7 +188,7 @@ public void createPaths(String basepath,String codePath) {
 	// Path path = Paths.get("C:\\Images\\Background\\Backgroundkeandar\\..\\..\\Foreground\\Necklace\\..\\Earrings\\..\\Etc");
 	 //Path path1 = Paths.get("D:\\images\\src\\main\\java\\..\\resurce\\..\\..\\test\\java\\..\\resource\\..\\..\\..\\Target\\Classes\\..\\Test-Classes");
 	 StringBuilder s = new StringBuilder(codePath.length());
-	 s.append(basepath);
+	 s.append("D:\\Images\\");
 	 for(int i=1;i<codePath.length()-1;i++) {
 	 if(codePath.charAt(i)=='[') {
 	  s.append("\\");
@@ -200,14 +204,18 @@ public void createPaths(String basepath,String codePath) {
 	  s.append(codePath.charAt(i));
 	 }
 	 }
+	 
 	 try {
+		    Files.createDirectories(Paths.get(s.toString()));
 	  System.out.println(s);
-	     Files.createDirectories(Paths.get(s.toString()));
-	 } catch (IOException e) {
-	     System.err.println("Cannot create directories - " + e);
+	 //   Files.createDirectories(Paths.get("D:\\Images\\src\\main\\java\\..\\resources\\..\\..\\test\\java\\..\\resources\\..\\..\\..\\target\\classes\\..\\test-classes\\..\\"));	 
+	  } catch (IOException e) {
+	 
+	 
+	  System.err.println("Cannot create directories - " + e);
 	 }
 	 
-	   }
+}
 }
 
 
