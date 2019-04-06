@@ -1,6 +1,10 @@
 package wastedPotentials;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import javax.swing.Spring;
@@ -18,8 +22,8 @@ public class XLSReader {
     private  String filePath;
 
     private Connection connection;
-    private ArrayList<ArrayList<String>> arrTestNGSuiteLevelParameters;
-    private ArrayList<String> arrTestNGListeners;
+    private ArrayList<ArrayList<String>> arrTestNGSuiteLevelParameters=new ArrayList<ArrayList<String>>();
+    private ArrayList<String> arrTestNGListeners= new ArrayList<>();
     private String projectName;
     private String projectDescription;
     private String projectSkeleton;
@@ -27,12 +31,12 @@ public class XLSReader {
     private String testNg_Needed;
     private String maven_Needed;
     private String maven_project_ModelVersion,maven_project_GroupId,maven_project_ArtifactId,maven_project_Version;
-    private ArrayList<ArrayList<String>> arrDependenciesMaven;
-    private ArrayList<ArrayList<String>>  arrProjectLevelDetails;
-    private ArrayList<ArrayList<String>> arrProjectSkeletons;
-    private ArrayList<ArrayList<String>> arrQueries;
-    private ArrayList<ArrayList<String>> arrtest_paramName_paramValue_csv;
-    private ArrayList<String> arrQuery;
+    private ArrayList<ArrayList<String>> arrDependenciesMaven=new ArrayList<ArrayList<String>>();
+    private ArrayList<ArrayList<String>>  arrProjectLevelDetails=new ArrayList<ArrayList<String>>();
+    private ArrayList<ArrayList<String>> arrProjectSkeletons=new ArrayList<ArrayList<String>>();
+    private ArrayList<ArrayList<String>> arrQueries=new ArrayList<ArrayList<String>>();
+    private ArrayList<ArrayList<String>> arrtest_paramName_paramValue_csv=new ArrayList<ArrayList<String>>();
+    private ArrayList<String> arrQuery=new ArrayList<>();
     private String pldquery;
     private String tcquery;      
     private String dquery;
@@ -45,10 +49,12 @@ public class XLSReader {
         Recordset queriesRS = connection.executeQuery("select * from queries");
         //queryName	query
          arrQueries= new ArrayList<ArrayList<String>>();
-         
+         while(queriesRS.next()) {
          arrQuery.add(queriesRS.getField("queryName"));
          arrQuery.add(queriesRS.getField("query"));
          arrQueries.add(arrQuery);
+         arrQuery= new ArrayList<String>();
+         }
          
        // projectName	projectDescription	projectSkeleton	projectLocation
         //testNg_Needed	maven_Needed	maven_project_ModelVersion	
@@ -56,21 +62,24 @@ public class XLSReader {
         //testNg_listenerClasses_csv	testNG_suite_level_paramName:paramValue_csv
        
          //psdquery  tcquery   dquery    psquery
+//pldquery
+     
 
          for(int i=0;i<arrQueries.size();i++) {
-        	if(arrQueries.get(0).get(i)=="pldquery") {
-        		pldquery=arrQueries.get(0).get(1);
+        	 System.out.println(arrQueries.get(0).get(i));
+        	if(arrQueries.get(i).get(0).equalsIgnoreCase("pldquery")) {
+        		pldquery=arrQueries.get(i).get(1);
             	
             }
-        	else if(arrQueries.get(0).get(i)=="tcquery") {
-        		tcquery=arrQueries.get(0).get(1);
+        	else if(arrQueries.get(i).get(0).equalsIgnoreCase("tcquery")) {
+        		tcquery=arrQueries.get(i).get(1);
             	
             }
-        	else if(arrQueries.get(0).get(i)=="dquery") {
-        	dquery=arrQueries.get(0).get(1);
+        	else if(arrQueries.get(i).get(0).equalsIgnoreCase("dquery")) {
+        	dquery=arrQueries.get(i).get(1);
 }
-        	else if(arrQueries.get(0).get(i)=="psquery") {
-	psquery=arrQueries.get(0).get(1);
+        	else if(arrQueries.get(i).get(0).equalsIgnoreCase("psquery")) {
+	psquery=arrQueries.get(i).get(1);
 }
         	else {
         		throw new Exception("query name is invalid");
@@ -79,7 +88,19 @@ public class XLSReader {
         	
         }
          Recordset pldRS=connection.executeQuery(pldquery);
-        maven_Needed=pldRS.getField("maven_Needed");
+        
+         this.projectName=pldRS.getField("projectName");
+         this.projectDescription=pldRS.getField("projectDescription");
+         this.projectSkeleton=pldRS.getField("projectSkeleton");
+         this.projectLocation=pldRS.getField("projectLocation");
+         Recordset psRS=connection.executeQuery(psquery);
+         while(psRS.next()) {
+         	if(projectSkeleton==psRS.getField("project_skeleton")) {
+         		createPaths(projectLocation, psRS.getField("projectStructure"));
+         	}
+         }
+         
+         maven_Needed=pldRS.getField("maven_Needed");
         if(!maven_Needed.isEmpty() && maven_Needed.equals("Y")) {
         	maven_project_ModelVersion=pldRS.getField("maven_project_ModelVersion");
         	maven_project_GroupId=pldRS.getField(maven_project_GroupId);
@@ -92,6 +113,8 @@ public class XLSReader {
         	singledependency.add(dRS.getField("dependencyGroupId"));
         	singledependency.add(dRS.getField("dependencyVersion"));
             arrDependenciesMaven.add(singledependency);
+        	singledependency= new ArrayList<String>();
+
         	}
         }
         testNg_Needed=pldRS.getField("testNg_Needed");
@@ -104,7 +127,7 @@ public class XLSReader {
         	for(String s:listenerstring) {
         		arrTestNGListeners.add(s);
         	}
-    		ArrayList<String> x= new ArrayList<>();
+    		ArrayList<String> x= new ArrayList<String>();
 
         	for(String s1: suitelevelparams) {
         		String[] s2=s1.split(":");
@@ -112,17 +135,16 @@ public class XLSReader {
         			x.add(s3);
         		}
         		arrTestNGSuiteLevelParameters.add(x);
-        		x=new ArrayList<>();
+        		x=new ArrayList<String>();
         		
         	}
+        	Recordset tcRS= connection.executeQuery(tcquery);
+        	createSuite(this.projectName,tcRS, this.projectLocation+"//src//" );
         }
-        this.projectName=pldRS.getField("projectName");
-        this.projectDescription=pldRS.getField("projectDescription");
-        this.projectSkeleton=pldRS.getField("projectSkeleton");
-        this.projectLocation=pldRS.getField("projectLocation");
-
         
-    } catch (FilloException e) {
+      //  testCaseName	testClasses_csv	numberOfInstances	test_paramName_paramValue_csv
+
+    } catch (Exception e) {
         e.printStackTrace();
     } finally {
         connection.close();
@@ -130,20 +152,21 @@ public class XLSReader {
     }
 
 
-    public void createSuite(Recordset recordset) {
+    public void createSuite(String suitename,Recordset recordset,String basepath) {
+    	System.out.println(suitename+basepath);
         XmlMapper xmlMapper = new XmlMapper();
-        testNgSuite suite = new testNgSuite("TesTautomationGuru");
+        testNgSuite suite = new testNgSuite(suitename);
         try {
             while (recordset.next()) {
 
-                String testName = recordset.getField("TestCaseDescription");
-                String className = recordset.getField("ClassName");
+                String testName = recordset.getField("testCaseName");
+                String className = recordset.getField("testClasses_csv");
                 String param = "Data";
-                String paramValue = recordset.getField("Data");
-
+               // String paramValue = recordset.getField("Data");
+                String paramValue="value";
                 suite.addTest(testName, param, paramValue, className);
             }
-            xmlMapper.writeValue(new File("c:/testng-suite.xml"), suite);
+            xmlMapper.writeValue(new File(basepath+"//testng-suite.xml"), suite);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -155,6 +178,36 @@ public class XLSReader {
 		// TODO Auto-generated method stub
 		
 	}
-
-
+public void createPaths(String basepath,String codePath) {
+	System.out.println(basepath+codePath);
+	// a = "[src[main[java,resources],test[java,resources]],Target[Classes,test-classes]]" ;
+	// Path path = Paths.get("C:\\Images\\Background\\Backgroundkeandar\\..\\..\\Foreground\\Necklace\\..\\Earrings\\..\\Etc");
+	 //Path path1 = Paths.get("D:\\images\\src\\main\\java\\..\\resurce\\..\\..\\test\\java\\..\\resource\\..\\..\\..\\Target\\Classes\\..\\Test-Classes");
+	 StringBuilder s = new StringBuilder(codePath.length());
+	 s.append(basepath);
+	 for(int i=1;i<codePath.length()-1;i++) {
+	 if(codePath.charAt(i)=='[') {
+	  s.append("\\");
+	 }
+	 else if(codePath.charAt(i)==']') {
+	  s.append("\\..\\");
+	  
+	 }
+	 else if(codePath.charAt(i)==',') {
+	 s.append("\\..\\");
+	}
+	 else {
+	  s.append(codePath.charAt(i));
+	 }
+	 }
+	 try {
+	  System.out.println(s);
+	     Files.createDirectories(Paths.get(s.toString()));
+	 } catch (IOException e) {
+	     System.err.println("Cannot create directories - " + e);
+	 }
+	 
+	   }
 }
+
+

@@ -4,7 +4,7 @@ public class projectCreator {
 public static void main(String[] args) {
 	
 try {
-	XLSReader xlsReader= new XLSReader(System.getProperty("user.dir")+"//resources//input//inputForAutoSeleniumProjectGenerator.xlsx");
+	XLSReader xlsReader= new XLSReader("C:\\Users\\Abhishek kumar\\git\\wastedPotential\\wastedPotentials\\src\\main\\resources\\Input\\inputForAutoSeleniumProjectGenerator.xlsx");
 xlsReader.execute();
 }
 catch(Exception e) {
