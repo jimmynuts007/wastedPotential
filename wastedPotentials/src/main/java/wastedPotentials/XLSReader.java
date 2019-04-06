@@ -212,7 +212,7 @@ public void createPaths(String basepath,String codePath) {
 	  } catch (IOException e) {
 	 
 	 
-	  System.err.println("Cannot create directories - " + e);
+	  System.out.println("Cannot create directories - " + e.getMessage());
 	 }
 	 
 }
